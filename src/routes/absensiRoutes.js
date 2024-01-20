@@ -8,6 +8,10 @@ const router = express.Router();
 
 // upload file
 const upload = require("../middleware/multerMiddleware");
+const validateToken = require("../middleware/validateTokenHandler");
+
+// middleware untuk semua route Absensi
+router.use(validateToken);
 
 router.get("/", getAbsensi);
 router.post("/", upload.any("foto_masuk"), createAbsensi);

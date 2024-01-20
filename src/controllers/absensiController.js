@@ -4,15 +4,15 @@ const prisma = new PrismaClient();
 
 // @desc Get all Absensi
 // @route GET /api/absensi
-// @acces public
+// @acces private
 const getAbsensi = async (req, res) => {
   const absensi = await prisma.absensi.findMany();
-  res.status(200).json({ absensi });
+  res.status(200).json(absensi);
 };
 
 // @desc Create a absensi
 // @route POST /api/absensi
-// @acces public
+// @acces private
 const createAbsensi = asyncHandler(async (req, res) => {
   console.log(req.files);
   console.log(req.body);
@@ -77,7 +77,7 @@ const createAbsensi = asyncHandler(async (req, res) => {
 
 // @desc Update a absensi
 // @route POST /api/absensi/:id
-// @acces public
+// @acces private
 const updateAbsensi = async (req, res) => {
   const { id } = req.params;
   const {

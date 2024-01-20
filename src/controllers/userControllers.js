@@ -2,11 +2,14 @@ const asyncHandler = require("express-async-handler");
 const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcrypt");
 const prisma = new PrismaClient();
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
 // @desc Get all users
 // @route GET /api/users
-// @acces public
+// @acces private
 const getUsers = async (req, res) => {
+  console.log(req);
   try {
     const users = await prisma.user.findMany();
 
@@ -23,7 +26,7 @@ const getUserById = async (req, res) => {
   const { id } = req.params;
 
   // Cek apakah ada id yang terdaftar atau tidak
-  const existingUser = await prisma.user.findUnique({
+  const existingUser = await prisma.user.findFirst({
     where: {
       id_user: id,
     },
@@ -65,7 +68,7 @@ const createUser = asyncHandler(async (req, res) => {
     throw new Error("User sudah terdaftar");
   }
 
-  // encrypt password
+  // Hash password
   const hashedPassword = await bcrypt.hash(password, 10);
   console.log("Hashed password : ", hashedPassword);
 
@@ -79,9 +82,7 @@ const createUser = asyncHandler(async (req, res) => {
   });
 
   if (result) {
-    res
-      .status(201)
-      .json({ message: "User baru berhasil dibuat", result: result });
+    res.status(201).json({ result: result });
     console.log("Request body is : ", result);
   } else {
     res.status(400);
@@ -91,7 +92,7 @@ const createUser = asyncHandler(async (req, res) => {
 
 // @desc Update a user
 // @route PUT /api/users/:id
-// @acces public
+// @acces private
 const updateUser = asyncHandler(async (req, res) => {
   console.log(req.body);
   const { id } = req.params;
@@ -133,4 +134,48 @@ const deleteUser = asyncHandler(async (req, res) => {
     .json({ message: "delete contact dengan id : " + id, deleteUser });
 });
 
-module.exports = { getUsers, getUserById, createUser, updateUser, deleteUser };
+// USER
+
+// @desc Login a user
+// @route POST /api/users/login
+// @acces public
+const loginUser = asyncHandler(async (req, res) => {
+  const { id_user, password } = req.body;
+
+  if (!id_user || !password) {
+    res.status(400);
+    throw new Error("Semua bidang tidak boleh kosong");
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id_user },
+  });
+
+  // bandingkan password dengan yang di hash
+  if (user && (await bcrypt.compare(password, user.password))) {
+    const accessToken = jwt.sign(
+      {
+        user: {
+          password: user.password,
+          nama_lengkap: user.nama_lengkap,
+          id_user: user.id_user,
+        },
+      },
+      process.env.ACCES_TOKEN_SECRET,
+      { expiresIn: "15m" }
+    );
+    res.status(200).json({ accessToken });
+  } else {
+    res.status(401);
+    throw new Error("Id user atau password salah");
+  }
+});
+
+module.exports = {
+  getUsers,
+  getUserById,
+  createUser,
+  updateUser,
+  deleteUser,
+  loginUser,
+};

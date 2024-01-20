@@ -21,7 +21,7 @@ model Absensi {
 
 model User {
   id_user         String    @id @default(uuid()) @db.VarChar(7)
-  password        String    @db.VarChar(30)
+  password        String
   role            Role      @default(USER)
   nama_lengkap    String?   @db.VarChar(40)
   bergabung_sejak DateTime? @default(now())
