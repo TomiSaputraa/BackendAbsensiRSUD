@@ -1,0 +1,34 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Absensi {
+  id_absensi       String   @id @default(uuid()) @db.Char(7)
+  id_user          String   @db.VarChar(7)
+  idUser           User     @relation(fields: [id_user], references: [id_user])
+  jam_masuk_absesi DateTime @default(now()) @db.Time()
+  tanggal_absensi  DateTime @default(now()) @db.Date
+  latitude_masuk   String   @db.VarChar(30)
+  longtitude_masuk String   @db.VarChar(30)
+  foto_masuk       String   @db.VarChar(30)
+  status_hadir     String?  @db.VarChar(1)
+}
+
+model User {
+  id_user         String    @id @default(uuid()) @db.VarChar(7)
+  password        String    @db.VarChar(30)
+  role            Role      @default(USER)
+  nama_lengkap    String?   @db.VarChar(40)
+  bergabung_sejak DateTime? @default(now())
+  Absensi         Absensi[]
+}
+
+enum Role {
+  USER
+  ADMIN
+}
