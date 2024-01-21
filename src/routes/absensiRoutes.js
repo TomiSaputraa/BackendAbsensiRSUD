@@ -14,10 +14,8 @@ const validateToken = require("../middleware/validateTokenHandler");
 // middleware untuk semua route Absensi
 router.use(validateToken);
 
-// Admin & User
+// All Role
 router.get("/", getAbsensi);
-
-// User
 router.post("/create", upload.any("foto_masuk"), createAbsensi);
 router.put("/:id", upload.any("foto_masuk"), updateAbsensi);
 

@@ -7,7 +7,8 @@ const app = express();
 const port = process.env.PORT || 3001;
 
 app.use(express.json());
-// gunakan ini agar file hasil upload bisa di akses di browser
+
+// gunakan ini agar file hasil upload bisa di akses di manapun
 app.use("/uploads", express.static("uploads"));
 
 app.use("/api/users", require("./src/routes/userRoutes"));
