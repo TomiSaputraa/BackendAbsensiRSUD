@@ -9,7 +9,7 @@ require("dotenv").config();
 // @route GET /api/users
 // @acces private
 const getUsers = async (req, res) => {
-  console.log(req);
+  // console.log(req);
   try {
     const users = await prisma.user.findMany();
 
@@ -26,7 +26,7 @@ const getUserById = async (req, res) => {
   const { id } = req.params;
 
   // Cek apakah ada id yang terdaftar atau tidak
-  const existingUser = await prisma.user.findFirst({
+  const existingUser = await prisma.user.findUnique({
     where: {
       id_user: id,
     },
@@ -43,7 +43,13 @@ const getUserById = async (req, res) => {
     },
   });
 
-  res.status(200).json({ user });
+  res.status(200).json({
+    id: user.id_user,
+    nama_lengkap: user.nama_lengkap,
+    bergabung_sejak: user.bergabung_sejak,
+    absensi: user.Absensi,
+    _count: user._count,
+  });
 };
 
 // @desc Create a user
@@ -70,7 +76,7 @@ const createUser = asyncHandler(async (req, res) => {
 
   // Hash password
   const hashedPassword = await bcrypt.hash(password, 10);
-  console.log("Hashed password : ", hashedPassword);
+  // console.log("Hashed password : ", hashedPassword);
 
   const result = await prisma.user.create({
     data: {
@@ -83,7 +89,7 @@ const createUser = asyncHandler(async (req, res) => {
 
   if (result) {
     res.status(201).json({ result: result });
-    console.log("Request body is : ", result);
+    // console.log("Request body is : ", result);
   } else {
     res.status(400);
     throw new Error("User tidak valid");
@@ -92,9 +98,8 @@ const createUser = asyncHandler(async (req, res) => {
 
 // @desc Update a user
 // @route PUT /api/users/:id
-// @acces private
+// @acces public
 const updateUser = asyncHandler(async (req, res) => {
-  console.log(req.body);
   const { id } = req.params;
   const { password, role, nama_lengkap } = req.body;
 
@@ -108,10 +113,14 @@ const updateUser = asyncHandler(async (req, res) => {
     return res.status(404).json({ error: "User tidak di temukan" });
   }
 
-  const hashedPassword = await bcrypt.hash(password, 10);
+  const hashedPassword = password ? await bcrypt.hash(password, 10) : undefined;
   const post = await prisma.user.update({
     where: { id_user: id },
-    data: { password: hashedPassword, role, nama_lengkap },
+    data: {
+      password: hashedPassword || existingUser.password,
+      role: role || existingUser.role,
+      nama_lengkap: nama_lengkap || existingUser.nama_lengkap,
+    },
   });
 
   res.status(200).json({ post });
@@ -123,11 +132,38 @@ const updateUser = asyncHandler(async (req, res) => {
 const deleteUser = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
-  const deleteUser = await prisma.user.delete({
+  const user = await prisma.user.findUnique({
     where: {
       id_user: id,
     },
   });
+  if (!user) {
+    res.status(404);
+    throw new Error("User dengan id tersebut tidak ditemukan");
+  }
+
+  try {
+    // Hapus data Absensi terkait dengan user
+    await prisma.absensi.deleteMany({
+      where: {
+        id_user: user.id_user,
+      },
+    });
+
+    // Setelah data Absensi dihapus, baru hapus user
+    const deletedUser = await prisma.user.delete({
+      where: {
+        id_user: user.id_user,
+      },
+    });
+
+    res.status(200).json({
+      message: `User dengan ID ${id} dan data terkait dihapus`,
+      deletedUser,
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Gagal menghapus user" });
+  }
 
   res
     .status(200)
@@ -156,9 +192,10 @@ const loginUser = asyncHandler(async (req, res) => {
     const accessToken = jwt.sign(
       {
         user: {
+          id_user: user.id_user,
           password: user.password,
           nama_lengkap: user.nama_lengkap,
-          id_user: user.id_user,
+          role: user.role,
         },
       },
       process.env.ACCES_TOKEN_SECRET,

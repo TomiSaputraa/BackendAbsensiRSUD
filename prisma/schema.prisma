@@ -15,7 +15,7 @@ model Absensi {
   tanggal_absensi  DateTime @default(now()) @db.Date
   latitude_masuk   String   @db.VarChar(30)
   longtitude_masuk String   @db.VarChar(30)
-  foto_masuk       String   @db.VarChar(30)
+  foto_masuk       String   @db.VarChar(150)
   status_hadir     String?  @db.VarChar(1)
 }
 
