@@ -4,4 +4,6 @@ node_modules
 uploads/*
 !uploads/.gitkeep
 !uploads/foto/absensi/.gitkeep
+uploads/foto/absensi/*
 !uploads/foto/profile/.gitkeep
+uploads/foto/profile/*
