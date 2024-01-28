@@ -3,3 +3,5 @@ node_modules
 .env
 uploads/*
 !uploads/.gitkeep
+!uploads/foto/profile/.gitkeep
+!uploads/foto/absensi/.gitkeep

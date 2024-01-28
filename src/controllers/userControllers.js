@@ -3,6 +3,8 @@ const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcrypt");
 const prisma = new PrismaClient();
 const jwt = require("jsonwebtoken");
+const validator = require("validator");
+const fs = require("fs");
 require("dotenv").config();
 
 // @desc Get all users
@@ -11,7 +13,11 @@ require("dotenv").config();
 const getUsers = async (req, res) => {
   // console.log(req);
   try {
-    const users = await prisma.user.findMany();
+    const users = await prisma.user.findMany({
+      where: {
+        id_user: req.user.id_user,
+      },
+    });
 
     res.status(200).json({ users });
   } catch (error) {
@@ -43,56 +49,99 @@ const getUserById = async (req, res) => {
     },
   });
 
-  res.status(200).json({
-    id: user.id_user,
-    nama_lengkap: user.nama_lengkap,
-    bergabung_sejak: user.bergabung_sejak,
-    absensi: user.Absensi,
-    _count: user._count,
-  });
+  res.status(200).json(user);
 };
 
 // @desc Create a user
-// @route POST /api/users
+// @route POST /api/users/create
 // @acces public
-const createUser = asyncHandler(async (req, res) => {
-  const { id_user, password, role, nama_lengkap } = req.body;
-  // cek ada yang kosong
-  if (!id_user || !password) {
-    res.status(400);
-    throw new Error("Tidak boleh ada bidang yang kosong");
-  }
-
-  // cek apakah user sudah terdaftar
-  const userAvailable = await prisma.user.findFirst({
-    where: {
-      id_user: id_user,
-    },
-  });
-  if (userAvailable) {
-    res.status(400);
-    throw new Error("User sudah terdaftar");
-  }
-
-  // Hash password
-  const hashedPassword = await bcrypt.hash(password, 10);
-  // console.log("Hashed password : ", hashedPassword);
-
-  const result = await prisma.user.create({
-    data: {
+const createUser = asyncHandler(async (req, res, next) => {
+  console.log(req.body);
+  console.log(req.files);
+  let foto_profil;
+  try {
+    const {
       id_user,
-      password: hashedPassword,
-      role: role || "USER", // Default role untuk USER jika tidak di berikan role
+      password_hash,
       nama_lengkap,
-    },
-  });
+      jenis_kelamin,
+      email,
+      no_hp,
+      status_pernikahan,
+      role,
+    } = req.body;
 
-  if (result) {
-    res.status(201).json({ result: result });
-    // console.log("Request body is : ", result);
-  } else {
-    res.status(400);
-    throw new Error("User tidak valid");
+    // File foto
+    if (req.files && req.files.length > 0) {
+      // Jika ada, simpan path foto profil
+      foto_profil = req.files[0].path;
+      console.log("foto masuk user : ", foto_profil);
+    }
+
+    // cek ada yang kosong
+    if (!id_user || !password_hash) {
+      res.status(400);
+      throw new Error("Tidak boleh ada bidang yang kosong");
+    }
+
+    // cek apakah user sudah terdaftar
+    const userAvailable = await prisma.user.findUnique({
+      where: {
+        id_user: id_user,
+      },
+    });
+    if (userAvailable) {
+      res.status(400);
+      throw new Error("User sudah terdaftar");
+    }
+
+    //konversi teks ke boolean
+    const booleanJk = jenis_kelamin?.toLowerCase?.() === "true";
+    const booleanSP = status_pernikahan?.toLowerCase?.() === "true";
+    // console.log(booleanJk, booleanSP);
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password_hash, 10);
+    console.log("Hashed password : ", hashedPassword);
+
+    // validasi email & no hp
+    if (!validator.isEmail(email)) {
+      res.status(400);
+      throw new Error("Email tidak valid");
+    }
+    if (!validator.isMobilePhone(no_hp, "id-ID")) {
+      res.status(400);
+      throw new Error("Nomor handphone tidak valid");
+    }
+
+    const result = await prisma.user.create({
+      data: {
+        id_user,
+        password_hash: hashedPassword,
+        nama_lengkap,
+        jenis_kelamin: booleanJk,
+        email,
+        no_hp,
+        foto_profil: foto_profil,
+        status_pernikahan: booleanSP,
+        role: role || "user", // Default role untuk user jika tidak di berikan role
+      },
+    });
+
+    if (result) {
+      res
+        .status(201)
+        .json({ message: "User baru berhasil dibuat", result: result });
+    } else {
+      res.status(400);
+      throw new Error("User tidak valid");
+    }
+  } catch (err) {
+    // Jika ada error maka gagal upload foto ke folder uploads
+    if (foto_profil) {
+      fs.unlinkSync(foto_profil);
+    }
+    next(err);
   }
 });
 
@@ -170,41 +219,46 @@ const deleteUser = asyncHandler(async (req, res) => {
     .json({ message: "delete contact dengan id : " + id, deleteUser });
 });
 
-// USER
-
 // @desc Login a user
 // @route POST /api/users/login
 // @acces public
-const loginUser = asyncHandler(async (req, res) => {
-  const { id_user, password } = req.body;
+const loginUser = asyncHandler(async (req, res, next) => {
+  try {
+    const { id_user, password_hash } = req.body;
 
-  if (!id_user || !password) {
-    res.status(400);
-    throw new Error("Semua bidang tidak boleh kosong");
-  }
+    if (!id_user || !password_hash) {
+      res.status(400);
+      throw new Error("Semua bidang tidak boleh kosong");
+    }
 
-  const user = await prisma.user.findUnique({
-    where: { id_user },
-  });
+    const user = await prisma.user.findUnique({
+      where: { id_user },
+    });
 
-  // bandingkan password dengan yang di hash
-  if (user && (await bcrypt.compare(password, user.password))) {
-    const accessToken = jwt.sign(
-      {
-        user: {
-          id_user: user.id_user,
-          password: user.password,
-          nama_lengkap: user.nama_lengkap,
-          role: user.role,
+    // bandingkan password dengan yang di hash
+    if (user && (await bcrypt.compare(password_hash, user.password_hash))) {
+      const accessToken = jwt.sign(
+        {
+          user: {
+            id_user: user.id_user,
+            password: user.password_hash,
+            nama_lengkap: user.nama_lengkap,
+            role: user.role,
+          },
         },
-      },
-      process.env.ACCES_TOKEN_SECRET,
-      { expiresIn: "15m" }
-    );
-    res.status(200).json({ accessToken });
-  } else {
-    res.status(401);
-    throw new Error("Id user atau password salah");
+        process.env.ACCES_TOKEN_SECRET,
+        { expiresIn: "15m" }
+      );
+      res.status(200).json({ accessToken, id_user });
+    } else if (!user) {
+      res.status(404);
+      throw new Error("user tidak ditemukan");
+    } else {
+      res.status(401);
+      throw new Error("Id user atau password salah");
+    }
+  } catch (err) {
+    next(err);
   }
 });
 

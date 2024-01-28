@@ -16,7 +16,7 @@ router.use(validateToken);
 
 // All Role
 router.get("/", getAbsensi);
-router.post("/create", upload.any("foto_masuk"), createAbsensi);
-router.put("/:id", upload.any("foto_masuk"), updateAbsensi);
+// router.post("/create", upload.any("foto_masuk"), createAbsensi);
+// router.put("/:id", upload.any("foto_masuk"), updateAbsensi);
 
 module.exports = router;

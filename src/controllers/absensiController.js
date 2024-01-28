@@ -18,10 +18,9 @@ const getAbsensi = async (req, res) => {
 // @acces private
 const createAbsensi = asyncHandler(async (req, res) => {
   // console.log(req.files);
-  console.log(req.user.id_user);
+  // console.log(req.user.id_user);
 
   const {
-    id_absensi,
     jam_masuk_absesi,
     tanggal_absensi,
     latitude_masuk,
@@ -30,26 +29,14 @@ const createAbsensi = asyncHandler(async (req, res) => {
   } = req.body;
 
   // cek apakah absensi sudah terdaftar
-  const absensiAvailable = await prisma.absensi.findFirst({
-    where: {
-      id_absensi: id_absensi,
-    },
-  });
-  if (absensiAvailable) {
-    res.status(400);
-    throw new Error(`Absensi dengan id ${id_absensi} sudah terdaftar`);
-  }
-
-  // Fungsi dibawah tidak di perlukan karna id_user sudah ada di token jwt
-  // Cek apakah id_user tersedia di tabel User
-  // const userAvailable = await prisma.user.findUnique({
+  // const absensiAvailable = await prisma.absensi.findUnique({
   //   where: {
-  //     id_user: id_user,
+  //     id_absensi: req.body.id,
   //   },
   // });
-  // if (!userAvailable) {
+  // if (absensiAvailable) {
   //   res.status(400);
-  //   throw new Error(`User dengan id ${id_user} tidak ditemukan`);
+  //   throw new Error(`Absensi dengan id ${id_absensi} sudah terdaftar`);
   // }
 
   // Ambil path file dari req.files jika menggunakan upload.single
@@ -57,7 +44,6 @@ const createAbsensi = asyncHandler(async (req, res) => {
 
   const result = await prisma.absensi.create({
     data: {
-      id_absensi,
       id_user: req.user.id_user, //id user akan sesuai dengan object id_user dari token
       jam_masuk_absesi,
       tanggal_absensi,
@@ -73,7 +59,7 @@ const createAbsensi = asyncHandler(async (req, res) => {
       .status(201)
       .json({ message: "Absensi baru berhasil dibuat", result: result });
   } else {
-    // res.status(400);
+    res.status(400);
     throw new Error("Absensi tidak valid");
   }
 });
