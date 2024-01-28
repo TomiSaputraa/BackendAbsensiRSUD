@@ -10,18 +10,20 @@ require("dotenv").config();
 // @desc Get all users
 // @route GET /api/users
 // @acces private
-const getUsers = async (req, res) => {
-  // console.log(req);
+const getUsers = async (req, res, next) => {
+  console.log(req.user.role);
   try {
-    const users = await prisma.user.findMany({
-      where: {
-        id_user: req.user.id_user,
-      },
-    });
+    // validasi hanya admin
+    if (req.user.role === "admin") {
+      const users = await prisma.user.findMany({});
 
-    res.status(200).json({ users });
-  } catch (error) {
-    res.status(500).json({ message: "Server error", error: error });
+      res.status(200).json({ users });
+    } else {
+      res.status(403);
+      throw new Error("hanya admin yang bisa melakukan hal tersebut");
+    }
+  } catch (err) {
+    next(err);
   }
 };
 
@@ -241,7 +243,6 @@ const loginUser = asyncHandler(async (req, res, next) => {
         {
           user: {
             id_user: user.id_user,
-            password: user.password_hash,
             nama_lengkap: user.nama_lengkap,
             role: user.role,
           },
