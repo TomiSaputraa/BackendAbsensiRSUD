@@ -8,21 +8,25 @@ datasource db {
 }
 
 model User {
-  id_user           String       @id @unique @db.VarChar(7)
-  password_hash     String       @db.VarChar(60)
-  nama_lengkap      String       @db.VarChar(255)
-  jenis_kelamin     Boolean?     @default(false)
-  email             String?      @db.VarChar(255)
-  no_hp             String?      @db.VarChar(15)
-  foto_profil       String       @db.VarChar(255)
-  status_pernikahan Boolean?     @default(false)
-  bergabung_sejak   DateTime?    @default(now()) @db.DateTime()
-  role              String?      @default("user") @db.VarChar(10)
-  Absensi           Absensi[]
-  Izin              Izin[]
-  Cuti              Cuti[]
-  Sakit             Sakit[]
-  UbahJadwal        UbahJadwal[]
+  id_user         String       @id @unique @db.VarChar(7)
+  password_hash   String       @db.VarChar(60)
+  nama_lengkap    String       @db.VarChar(255)
+  jenis_kelamin   JenisKelamin @default(pria)
+  email           String?      @db.VarChar(255)
+  no_hp           String?      @db.VarChar(15)
+  foto_profil     String       @db.VarChar(255)
+  bergabung_sejak DateTime?    @default(now()) @db.DateTime()
+  role            String?      @default("user") @db.VarChar(10)
+  Absensi         Absensi[]
+  Izin            Izin[]
+  Cuti            Cuti[]
+  Sakit           Sakit[]
+  UbahJadwal      UbahJadwal[]
+}
+
+enum JenisKelamin {
+  pria
+  wanita
 }
 
 model Absensi {

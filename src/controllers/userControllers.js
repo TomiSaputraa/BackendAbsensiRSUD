@@ -5,6 +5,7 @@ const prisma = new PrismaClient();
 const jwt = require("jsonwebtoken");
 const validator = require("validator");
 const fs = require("fs");
+const { log } = require("console");
 require("dotenv").config();
 
 // @desc Get all users
@@ -45,10 +46,6 @@ const getUserById = async (req, res) => {
 
   const user = await prisma.user.findFirst({
     where: { id_user: id },
-    include: {
-      Absensi: true,
-      _count: true,
-    },
   });
 
   res.status(200).json(user);
@@ -69,7 +66,6 @@ const createUser = asyncHandler(async (req, res, next) => {
       jenis_kelamin,
       email,
       no_hp,
-      status_pernikahan,
       role,
     } = req.body;
 
@@ -97,11 +93,6 @@ const createUser = asyncHandler(async (req, res, next) => {
       throw new Error("User sudah terdaftar");
     }
 
-    //konversi teks ke boolean
-    const booleanJk = jenis_kelamin?.toLowerCase?.() === "true";
-    const booleanSP = status_pernikahan?.toLowerCase?.() === "true";
-    // console.log(booleanJk, booleanSP);
-
     // Hash password
     const hashedPassword = await bcrypt.hash(password_hash, 10);
     console.log("Hashed password : ", hashedPassword);
@@ -121,11 +112,10 @@ const createUser = asyncHandler(async (req, res, next) => {
         id_user,
         password_hash: hashedPassword,
         nama_lengkap,
-        jenis_kelamin: booleanJk,
+        jenis_kelamin: jenis_kelamin,
         email,
         no_hp,
         foto_profil: foto_profil,
-        status_pernikahan: booleanSP,
         role: role || "user", // Default role untuk user jika tidak di berikan role
       },
     });
@@ -150,31 +140,77 @@ const createUser = asyncHandler(async (req, res, next) => {
 // @desc Update a user
 // @route PUT /api/users/:id
 // @acces public
-const updateUser = asyncHandler(async (req, res) => {
+const updateUser = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
-  const { password, role, nama_lengkap } = req.body;
+  let foto_profil;
 
-  // Cek apakah ada id yang terdaftar atau tidak
-  const existingUser = await prisma.user.findUnique({
-    where: {
-      id_user: id,
-    },
-  });
-  if (!existingUser) {
-    return res.status(404).json({ error: "User tidak di temukan" });
+  try {
+    const {
+      id_user,
+      password_hash,
+      nama_lengkap,
+      jenis_kelamin,
+      email,
+      no_hp,
+      status_pernikahan,
+      role,
+    } = req.body;
+
+    console.log(req.body);
+    console.log(req.files);
+
+    console.log({ jenis_kelamin });
+    // Cek apakah ada id yang terdaftar atau tidak
+    const existingUser = await prisma.user.findUnique({
+      where: {
+        id_user: id,
+      },
+    });
+
+    // pengecekan user apakah tersedia
+    if (!existingUser) {
+      res.status(404);
+      throw new Error("User tidak ditemukan");
+    }
+    //konversi teks ke boolean
+    const booleanJk = validator.toBoolean(jenis_kelamin);
+    const booleanSP = status_pernikahan === "true";
+    console.log(`${booleanJk}, ${booleanJk} + booleanSP`);
+
+    // hash password
+    const hashedPassword = password_hash
+      ? await bcrypt.hash(password_hash, 10)
+      : undefined;
+
+    // validasi email & no hp
+    if (!validator.isEmail(email)) {
+      res.status(400);
+      throw new Error("Email tidak valid");
+    }
+    if (!validator.isMobilePhone(no_hp, "id-ID")) {
+      res.status(400);
+      throw new Error("Nomor handphone tidak valid");
+    }
+
+    const result = await prisma.user.update({
+      where: { id_user: id },
+      data: {
+        id_user: id_user || existingUser.id_user,
+        password_hash: hashedPassword || existingUser.password_hash,
+        nama_lengkap: nama_lengkap || existingUser.nama_lengkap,
+        jenis_kelamin: booleanJk || existingUser.jenis_kelamin,
+        email: email || existingUser.email,
+        no_hp: no_hp || existingUser.no_hp,
+        foto_profil: foto_profil || existingUser.foto_profil,
+        status_pernikahan: booleanSP,
+        role: role || existingUser.role,
+      },
+    });
+
+    res.status(200).json({ result });
+  } catch (err) {
+    next(err);
   }
-
-  const hashedPassword = password ? await bcrypt.hash(password, 10) : undefined;
-  const post = await prisma.user.update({
-    where: { id_user: id },
-    data: {
-      password: hashedPassword || existingUser.password,
-      role: role || existingUser.role,
-      nama_lengkap: nama_lengkap || existingUser.nama_lengkap,
-    },
-  });
-
-  res.status(200).json({ post });
 });
 
 // @desc Delete a user

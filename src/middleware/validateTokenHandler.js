@@ -9,7 +9,7 @@ const validateToken = asyncHandler(async (req, res, next) => {
     jwt.verify(token, process.env.ACCES_TOKEN_SECRET, (err, decoded) => {
       if (err) {
         res.status(401);
-        throw new Error("User tidak authorized");
+        throw new Error("User tidak authorized atau token expire");
       }
       req.user = decoded.user;
       next();
