@@ -144,6 +144,9 @@ const updateUser = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
   let foto_profil;
 
+  console.log("req body : ", req.body);
+  console.log("req files: ", req.files);
+
   try {
     const {
       id_user,
@@ -152,14 +155,13 @@ const updateUser = asyncHandler(async (req, res, next) => {
       jenis_kelamin,
       email,
       no_hp,
-      status_pernikahan,
       role,
     } = req.body;
 
-    console.log(req.body);
-    console.log(req.files);
+    // console.log(req.files);
 
-    console.log({ jenis_kelamin });
+    console.log({ foto_profil });
+
     // Cek apakah ada id yang terdaftar atau tidak
     const existingUser = await prisma.user.findUnique({
       where: {
@@ -172,10 +174,6 @@ const updateUser = asyncHandler(async (req, res, next) => {
       res.status(404);
       throw new Error("User tidak ditemukan");
     }
-    //konversi teks ke boolean
-    const booleanJk = validator.toBoolean(jenis_kelamin);
-    const booleanSP = status_pernikahan === "true";
-    console.log(`${booleanJk}, ${booleanJk} + booleanSP`);
 
     // hash password
     const hashedPassword = password_hash
@@ -183,13 +181,27 @@ const updateUser = asyncHandler(async (req, res, next) => {
       : undefined;
 
     // validasi email & no hp
-    if (!validator.isEmail(email)) {
+    if (!validator.isEmail(email || existingUser.email)) {
       res.status(400);
       throw new Error("Email tidak valid");
     }
-    if (!validator.isMobilePhone(no_hp, "id-ID")) {
+    if (!validator.isMobilePhone(no_hp || existingUser.no_hp, "id-ID")) {
       res.status(400);
       throw new Error("Nomor handphone tidak valid");
+    }
+
+    // File foto
+    if (req.files && req.files.length > 0) {
+      // Jika ada, simpan path foto profil
+      foto_profil = req.files[0].path;
+      console.log("foto masuk user : ", foto_profil);
+
+      // Hapus foto profil lama (jika ada)
+      if (existingUser.foto_profil) {
+        fs.unlinkSync(existingUser.foto_profil);
+      }
+    } else {
+      foto_profil = existingUser.foto_profil;
     }
 
     const result = await prisma.user.update({
@@ -198,17 +210,20 @@ const updateUser = asyncHandler(async (req, res, next) => {
         id_user: id_user || existingUser.id_user,
         password_hash: hashedPassword || existingUser.password_hash,
         nama_lengkap: nama_lengkap || existingUser.nama_lengkap,
-        jenis_kelamin: booleanJk || existingUser.jenis_kelamin,
+        jenis_kelamin: jenis_kelamin || existingUser.jenis_kelamin,
         email: email || existingUser.email,
         no_hp: no_hp || existingUser.no_hp,
-        foto_profil: foto_profil || existingUser.foto_profil,
-        status_pernikahan: booleanSP,
+        foto_profil: foto_profil,
         role: role || existingUser.role,
       },
     });
 
-    res.status(200).json({ result });
+    res.status(200).json({ message: "Succes update data user", result });
   } catch (err) {
+    // Jika ada error maka gagal upload foto ke folder uploads
+    if (foto_profil && foto_profil !== existingUser.foto_profil) {
+      fs.unlinkSync(foto_profil);
+    }
     next(err);
   }
 });

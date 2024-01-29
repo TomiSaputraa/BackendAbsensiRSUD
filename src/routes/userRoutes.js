@@ -21,7 +21,7 @@ router.post("/login", loginUser);
 router.get("/", validateToken, getUsers);
 router.get("/:id", validateToken, getUserById);
 router.post("/create", upload.any("foto_masuk"), createUser);
-router.put("/:id", validateToken, updateUser);
+router.patch("/:id", validateToken, upload.any("foto_masuk"), updateUser);
 router.delete("/:id", validateToken, deleteUser);
 
 module.exports = router;
