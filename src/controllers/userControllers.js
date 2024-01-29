@@ -231,45 +231,50 @@ const updateUser = asyncHandler(async (req, res, next) => {
 // @desc Delete a user
 // @route DELETE /api/users/:id
 // @acces public
-const deleteUser = asyncHandler(async (req, res) => {
+const deleteUser = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
 
-  const user = await prisma.user.findUnique({
-    where: {
-      id_user: id,
-    },
-  });
-  if (!user) {
-    res.status(404);
-    throw new Error("User dengan id tersebut tidak ditemukan");
-  }
-
   try {
-    // Hapus data Absensi terkait dengan user
-    await prisma.absensi.deleteMany({
+    const user = await prisma.user.findUnique({
       where: {
-        id_user: user.id_user,
+        id_user: id,
       },
     });
+    if (!user) {
+      res.status(404);
+      throw new Error("User dengan id tersebut tidak ditemukan");
+    }
 
-    // Setelah data Absensi dihapus, baru hapus user
-    const deletedUser = await prisma.user.delete({
-      where: {
-        id_user: user.id_user,
-      },
-    });
+    try {
+      // Hapus data Absensi terkait dengan user
+      await prisma.absensi.deleteMany({
+        where: {
+          id_user: user.id_user,
+        },
+      });
 
-    res.status(200).json({
-      message: `User dengan ID ${id} dan data terkait dihapus`,
-      deletedUser,
-    });
-  } catch (error) {
-    res.status(500).json({ error: "Gagal menghapus user" });
+      // Setelah data Absensi dihapus, baru hapus user
+      const deletedUser = await prisma.user.delete({
+        where: {
+          id_user: user.id_user,
+        },
+      });
+
+      res.status(200).json({
+        message: `User dengan ID ${id} dan data terkait dihapus`,
+        deletedUser,
+        v,
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Gagal menghapus user" });
+    }
+
+    res
+      .status(200)
+      .json({ message: "delete contact dengan id : " + id, deleteUser });
+  } catch (err) {
+    next(err);
   }
-
-  res
-    .status(200)
-    .json({ message: "delete contact dengan id : " + id, deleteUser });
 });
 
 // @desc Login a user
