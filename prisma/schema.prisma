@@ -8,15 +8,18 @@ datasource db {
 }
 
 model User {
-  id_user         String       @id @unique @db.VarChar(7)
-  password_hash   String       @db.VarChar(60)
-  nama_lengkap    String       @db.VarChar(255)
-  jenis_kelamin   JenisKelamin @default(pria)
-  email           String?      @db.VarChar(255)
-  no_hp           String?      @db.VarChar(15)
-  foto_profil     String       @db.VarChar(255)
-  bergabung_sejak DateTime?    @default(now()) @db.DateTime()
-  role            String?      @default("user") @db.VarChar(10)
+  id_user         String        @id @unique @db.VarChar(7)
+  password_hash   String        @db.VarChar(60)
+  nama_lengkap    String        @db.VarChar(255)
+  jabatan         Jabatan?      @default(None)
+  ruangan         String?       @db.VarChar(20)
+  grup            Grup?         @default(None)
+  jenis_kelamin   JenisKelamin? @default(Pria)
+  email           String?       @db.VarChar(255)
+  no_hp           String?       @db.VarChar(15)
+  foto_profil     String        @db.VarChar(255)
+  bergabung_sejak DateTime?     @default(now()) @db.DateTime()
+  role            String?       @default("user") @db.VarChar(10)
   Absensi         Absensi[]
   Izin            Izin[]
   Cuti            Cuti[]
@@ -24,13 +27,30 @@ model User {
   UbahJadwal      UbahJadwal[]
 }
 
+enum Jabatan {
+  Kepala_Instalasi
+  Nutrisionis
+  Logistik
+  Administrasi
+  None
+}
+
+enum Grup {
+  Group_1
+  Group_2
+  Juru_Masak_1
+  Juru_Masak_2
+  Pj_Lauk_Hewani
+  None
+}
+
 enum JenisKelamin {
-  pria
-  wanita
+  Pria
+  Wanita
 }
 
 model Absensi {
-  id_abi           Int      @id @unique @default(autoincrement())
+  id_absensi       Int      @id @unique @default(autoincrement())
   id_user          String   @db.VarChar(7)
   idUser           User     @relation(fields: [id_user], references: [id_user])
   tanggal_absensi  DateTime @default(now()) @db.Date

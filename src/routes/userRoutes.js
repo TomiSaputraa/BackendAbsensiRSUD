@@ -16,7 +16,6 @@ const router = express.Router();
 const dynamicPath = "uploads/foto/profile";
 const upload = storageMiddleware(dynamicPath);
 
-// Admin
 router.post("/login", loginUser);
 router.get("/", validateToken, getUsers);
 router.get("/:id", validateToken, getUserById);
