@@ -23,6 +23,24 @@ const getAbsensi = asyncHandler(async (req, res, next) => {
   }
 });
 
+const shiftTimes = {
+  P: { waktu_masuk: "07.30", waktu_pulang: "14.00" },
+  P1: { waktu_masuk: "05.00", waktu_pulang: "12.00" },
+  P2: { waktu_masuk: "06.00", waktu_pulang: "13.00" },
+  J: { waktu_masuk: "07.15", waktu_pulang: "11.15" },
+  J1: { waktu_masuk: "07.30", waktu_pulang: "12.30" },
+  SB: { waktu_masuk: "07.15", waktu_pulang: "13.45" },
+  SB1: { waktu_masuk: "07.30", waktu_pulang: "13.45" },
+  SB3: { waktu_masuk: "06.00", waktu_pulang: "12.30" },
+  S1: { waktu_masuk: "13.00", waktu_pulang: "19.00" },
+  N: { waktu_masuk: "07.15", waktu_pulang: "14.00" },
+  default: { waktu_masuk: "00.00", waktu_pulang: "00.00" },
+};
+
+const getShiftTimes = (kode_shift) => {
+  return shiftTimes[kode_shift] || shiftTimes["default"];
+};
+
 // @desc Create a absensi
 // @route POST /api/absensi
 // @acces private
@@ -31,14 +49,12 @@ const createAbsensi = asyncHandler(async (req, res, next) => {
   // console.log(req.user.id_user);
   console.log(req.user);
 
-  // let waktu_masuk;
-  // let waktu;
+  let waktu_masuk;
+  let waktu_pulang;
   let foto_masuk;
   try {
     const {
       kode_shift,
-      waktu_masuk,
-      waktu_pulang,
       latitude_masuk,
       longitude_masuk,
       ip_address,
@@ -56,10 +72,60 @@ const createAbsensi = asyncHandler(async (req, res, next) => {
       console.log("foto masuk : ", foto_masuk);
     }
 
+    // switch (kode_shift) {
+    //   case "P":
+    //     waktu_masuk = "07.30";
+    //     waktu_pulang = "14.00";
+    //     break;
+    //   case "P1":
+    //     waktu_masuk = "05.00";
+    //     waktu_pulang = "12.00";
+    //     break;
+    //   case "P2":
+    //     waktu_masuk = "06.00";
+    //     waktu_pulang = "13.00";
+    //     break;
+    //   case "J":
+    //     waktu_masuk = "07.15";
+    //     waktu_pulang = "11.15";
+    //     break;
+    //   case "J1":
+    //     waktu_masuk = "07.30";
+    //     waktu_pulang = "12.30";
+    //     break;
+    //   case "SB":
+    //     waktu_masuk = "07.15";
+    //     waktu_pulang = "13.45";
+    //     break;
+    //   case "SB1":
+    //     waktu_masuk = "07.30";
+    //     waktu_pulang = "13.45";
+    //   case "SB3":
+    //     waktu_masuk = "06.00";
+    //     waktu_pulang = "12.30";
+    //     break;
+    //   case "S1":
+    //     waktu_masuk = "13.00";
+    //     waktu_pulang = "19.00";
+    //     break;
+    //   case "N":
+    //     waktu_masuk = "07.15";
+    //     waktu_pulang = "14.00";
+    //     break;
+    //   default:
+    //     waktu_masuk = "00.00";
+    //     waktu_pulang = "00.00";
+    //     break;
+    // }
+
+    const { waktu_masuk, waktu_pulang } = getShiftTimes(kode_shift);
+
     const result = await prisma.absensi.create({
       data: {
         id_user: req.user.id_user,
         kode_shift,
+        waktu_masuk: waktu_masuk,
+        waktu_pulang: waktu_pulang,
         latitude_masuk,
         longitude_masuk,
         ip_address,
