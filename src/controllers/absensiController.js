@@ -1,66 +1,89 @@
 const asyncHandler = require("express-async-handler");
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
+const fs = require("fs");
 
 // @desc Get all Absensi
 // @route GET /api/absensi
 // @acces private
-const getAbsensi = async (req, res) => {
+const getAbsensi = asyncHandler(async (req, res, next) => {
   // console.log(req.user);
-  const absensi = await prisma.absensi.findMany({
-    where: { id_user: req.user.id_user },
-  });
-  res.status(200).json(absensi);
-};
+  try {
+    const absensi = await prisma.absensi.findMany({
+      where: { id_user: req.user.id_user },
+    });
+    if (!absensi) {
+      res.status(404);
+      throw new Error("Absensi tidak ditemukan");
+    }
+
+    res.status(200).json(absensi);
+  } catch (error) {
+    next(error);
+  }
+});
 
 // @desc Create a absensi
 // @route POST /api/absensi
 // @acces private
-const createAbsensi = asyncHandler(async (req, res) => {
+const createAbsensi = asyncHandler(async (req, res, next) => {
   // console.log(req.files);
   // console.log(req.user.id_user);
+  console.log(req.user);
 
-  const {
-    jam_masuk_absesi,
-    tanggal_absensi,
-    latitude_masuk,
-    longtitude_masuk,
-    status_hadir,
-  } = req.body;
-
-  // cek apakah absensi sudah terdaftar
-  // const absensiAvailable = await prisma.absensi.findUnique({
-  //   where: {
-  //     id_absensi: req.body.id,
-  //   },
-  // });
-  // if (absensiAvailable) {
-  //   res.status(400);
-  //   throw new Error(`Absensi dengan id ${id_absensi} sudah terdaftar`);
-  // }
-
-  // Ambil path file dari req.files jika menggunakan upload.single
-  const fotoMasuk = req.files[0].path;
-
-  const result = await prisma.absensi.create({
-    data: {
-      id_user: req.user.id_user, //id user akan sesuai dengan object id_user dari token
-      jam_masuk_absesi,
-      tanggal_absensi,
+  // let waktu_masuk;
+  // let waktu;
+  let foto_masuk;
+  try {
+    const {
+      kode_shift,
+      waktu_masuk,
+      waktu_pulang,
       latitude_masuk,
-      longtitude_masuk,
-      foto_masuk: fotoMasuk,
-      status_hadir: status_hadir || "1",
-    },
-  });
+      longitude_masuk,
+      ip_address,
+      latitude_pulang,
+      longitude_pulang,
+      telat_masuk,
+      telat_pulang,
+      status_hadir,
+    } = req.body;
 
-  if (result) {
-    res
-      .status(201)
-      .json({ message: "Absensi baru berhasil dibuat", result: result });
-  } else {
-    res.status(400);
-    throw new Error("Absensi tidak valid");
+    // Ambil path file dari req.files jika menggunakan upload.single
+    //
+    if (req.files && req.files.length > 0) {
+      foto_masuk = req.files[0].path;
+      console.log("foto masuk : ", foto_masuk);
+    }
+
+    const result = await prisma.absensi.create({
+      data: {
+        id_user: req.user.id_user,
+        kode_shift,
+        latitude_masuk,
+        longitude_masuk,
+        ip_address,
+        latitude_pulang,
+        longitude_pulang,
+        telat_masuk,
+        telat_pulang,
+        foto_masuk: foto_masuk,
+        status_hadir: status_hadir || "1",
+      },
+    });
+
+    if (result) {
+      res.status(201).json({ message: "Absensi baru berhasil dibuat", result });
+    } else {
+      res.status(400);
+      throw new Error("Absensi tidak valid");
+    }
+  } catch (err) {
+    // Jika ada error maka gagal upload foto ke folder uploads
+    if (foto_masuk) {
+      fs.unlinkSync(foto_masuk);
+    }
+    next(err);
   }
 });
 
@@ -70,12 +93,13 @@ const createAbsensi = asyncHandler(async (req, res) => {
 const updateAbsensi = async (req, res) => {
   const { id } = req.params;
   const {
-    id_user,
-    jam_masuk_absesi,
-    tanggal_absensi,
     latitude_masuk,
-    longtitude_masuk,
-
+    longitude_masuk,
+    ip_address,
+    latitude_keluar,
+    longitude_keluar,
+    telat_masuk,
+    telat_keluar,
     status_hadir,
   } = req.body;
 
@@ -96,12 +120,14 @@ const updateAbsensi = async (req, res) => {
     where: { id_absensi: id },
     data: {
       id_user,
-      jam_masuk_absesi: jam_masuk_absesi || existingAbsensi.jam_masuk_absesi,
-      tanggal_absensi: tanggal_absensi || existingAbsensi.tanggal_absensi,
-      latitude_masuk: latitude_masuk || existingAbsensi.latitude_masuk,
-      longtitude_masuk: longtitude_masuk || existingAbsensi.longtitude_masuk,
-      foto_masuk: existingAbsensi.foto_masuk,
-      status_hadir: status_hadir || existingAbsensi.status_hadir,
+      latitude_masuk,
+      longitude_masuk,
+      ip_address,
+      latitude_keluar,
+      longitude_keluar,
+      telat_masuk,
+      telat_keluar,
+      status_hadir,
     },
     include: {
       idUser: true,

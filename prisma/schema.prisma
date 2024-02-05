@@ -50,21 +50,35 @@ enum JenisKelamin {
 }
 
 model Absensi {
-  id_absensi       Int      @id @unique @default(autoincrement())
-  id_user          String   @db.VarChar(7)
-  idUser           User     @relation(fields: [id_user], references: [id_user])
-  tanggal_absensi  DateTime @default(now()) @db.Date
-  jam_masuk_absesi DateTime @default(now()) @db.Time()
-  latitude_masuk   String?  @db.VarChar(30)
-  longitude_masuk  String?  @db.VarChar(30)
-  longtitude_masuk String?  @db.VarChar(30)
-  ip_address       String?  @db.VarChar(30)
-  latitude_keluar  String?  @db.VarChar(30)
-  longitude_keluar String?  @db.VarChar(30)
-  telat_masuk      String?  @db.VarChar(10)
-  telat_keluar     String?  @db.VarChar(10)
-  foto_masuk       String?  @db.VarChar(255)
-  status_hadir     String?  @db.VarChar(1)
+  id_absensi       Int       @id @unique @default(autoincrement())
+  id_user          String    @db.VarChar(7)
+  idUser           User      @relation(fields: [id_user], references: [id_user])
+  kode_shift       KodeShift
+  tanggal_absensi  DateTime  @default(now()) @db.DateTime()
+  waktu_masuk      DateTime  @default(now()) @db.Time()
+  waktu_pulang     DateTime? @db.Time()
+  telat_masuk      String?   @db.VarChar(10)
+  telat_pulang     String?   @db.VarChar(10)
+  latitude_masuk   String?   @db.VarChar(30)
+  longitude_masuk  String?   @db.VarChar(30)
+  latitude_pulang  String?   @db.VarChar(30)
+  longitude_pulang String?   @db.VarChar(30)
+  foto_masuk       String?   @db.VarChar(255)
+  status_hadir     String?   @db.VarChar(1)
+}
+
+enum KodeShift {
+  P
+  P1
+  P2
+  J
+  J1
+  SB
+  SB1
+  SB3
+  S1
+  N
+  L
 }
 
 model Izin {

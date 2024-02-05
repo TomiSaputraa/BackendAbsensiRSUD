@@ -247,43 +247,44 @@ const deleteUser = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
 
   try {
-    const user = await prisma.user.findUnique({
-      where: {
-        id_user: id,
-      },
-    });
-    if (!user) {
-      res.status(404);
-      throw new Error("User dengan id tersebut tidak ditemukan");
-    }
-
-    try {
-      // Hapus data Absensi terkait dengan user
-      await prisma.absensi.deleteMany({
+    // validasi hanya admin
+    if (req.user.role === "admin") {
+      const user = await prisma.user.findUnique({
         where: {
-          id_user: user.id_user,
+          id_user: id,
         },
       });
+      if (!user) {
+        res.status(404);
+        throw new Error("User dengan id tersebut tidak ditemukan");
+      }
+      // Nonaktifkan foreign key
+      await prisma.$executeRaw`SET FOREIGN_KEY_CHECKS=0`;
 
-      // Setelah data Absensi dihapus, baru hapus user
+      // Hapus user
       const deletedUser = await prisma.user.delete({
         where: {
-          id_user: user.id_user,
+          id_user: id,
         },
       });
 
-      res.status(200).json({
-        message: `User dengan ID ${id} dan data terkait dihapus`,
-        deletedUser,
-        v,
-      });
-    } catch (error) {
-      res.status(500).json({ error: "Gagal menghapus user" });
-    }
+      if (deletedUser) {
+        // hapus foto profil
+        const fileFoto = user.foto_profil;
+        fs.unlinkSync(fileFoto);
 
-    res
-      .status(200)
-      .json({ message: "delete contact dengan id : " + id, deleteUser });
+        // Aktifkan kembali foreign key
+        await prisma.$executeRaw`SET FOREIGN_KEY_CHECKS=1`;
+
+        res.status(200).json({
+          message: `User dengan ID ${id} dan data terkait dihapus`,
+          deletedUser,
+        });
+      }
+    } else {
+      res.status(403);
+      throw new Error("hanya admin yang bisa melakukan hal tersebut");
+    }
   } catch (err) {
     next(err);
   }
