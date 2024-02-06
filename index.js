@@ -1,17 +1,17 @@
 const express = require("express");
 const errorHandler = require("./src/middleware/errorHandler");
-
 require("dotenv").config();
 
 const app = express();
-
 const port = process.env.PORT || 3001;
 
+// middleware
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// gunakan ini agar file hasil upload bisa di akses di manapun
 app.use("/uploads", express.static("uploads"));
 
+// middleware routes
 app.use("/api/users", require("./src/routes/userRoutes"));
 app.use("/api/absensi", require("./src/routes/absensiRoutes"));
 app.use(errorHandler);

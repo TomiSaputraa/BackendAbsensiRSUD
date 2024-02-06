@@ -9,8 +9,15 @@ const fs = require("fs");
 const getAbsensi = asyncHandler(async (req, res, next) => {
   // console.log(req.user);
   try {
-    const absensi = await prisma.absensi.findMany({
+    // Get absensi berdasarkan user lalu sortir berdasarkan post data terakhir
+    const absensi = await prisma.user.findUnique({
       where: { id_user: req.user.id_user },
+      select: {
+        Absensi: {
+          orderBy: { id_absensi: "desc" },
+          // take: 1, // Jumlah yang ingin ditampilkan
+        },
+      },
     });
     if (!absensi) {
       res.status(404);
@@ -49,15 +56,12 @@ const createAbsensi = asyncHandler(async (req, res, next) => {
   // console.log(req.user.id_user);
   console.log(req.user);
 
-  let waktu_masuk;
-  let waktu_pulang;
-  let foto_masuk;
   try {
+    let foto_masuk;
     const {
       kode_shift,
       latitude_masuk,
       longitude_masuk,
-      ip_address,
       latitude_pulang,
       longitude_pulang,
       telat_masuk,
@@ -65,58 +69,10 @@ const createAbsensi = asyncHandler(async (req, res, next) => {
       status_hadir,
     } = req.body;
 
-    // Ambil path file dari req.files jika menggunakan upload.single
-    //
     if (req.files && req.files.length > 0) {
       foto_masuk = req.files[0].path;
       console.log("foto masuk : ", foto_masuk);
     }
-
-    // switch (kode_shift) {
-    //   case "P":
-    //     waktu_masuk = "07.30";
-    //     waktu_pulang = "14.00";
-    //     break;
-    //   case "P1":
-    //     waktu_masuk = "05.00";
-    //     waktu_pulang = "12.00";
-    //     break;
-    //   case "P2":
-    //     waktu_masuk = "06.00";
-    //     waktu_pulang = "13.00";
-    //     break;
-    //   case "J":
-    //     waktu_masuk = "07.15";
-    //     waktu_pulang = "11.15";
-    //     break;
-    //   case "J1":
-    //     waktu_masuk = "07.30";
-    //     waktu_pulang = "12.30";
-    //     break;
-    //   case "SB":
-    //     waktu_masuk = "07.15";
-    //     waktu_pulang = "13.45";
-    //     break;
-    //   case "SB1":
-    //     waktu_masuk = "07.30";
-    //     waktu_pulang = "13.45";
-    //   case "SB3":
-    //     waktu_masuk = "06.00";
-    //     waktu_pulang = "12.30";
-    //     break;
-    //   case "S1":
-    //     waktu_masuk = "13.00";
-    //     waktu_pulang = "19.00";
-    //     break;
-    //   case "N":
-    //     waktu_masuk = "07.15";
-    //     waktu_pulang = "14.00";
-    //     break;
-    //   default:
-    //     waktu_masuk = "00.00";
-    //     waktu_pulang = "00.00";
-    //     break;
-    // }
 
     const { waktu_masuk, waktu_pulang } = getShiftTimes(kode_shift);
 
@@ -126,13 +82,12 @@ const createAbsensi = asyncHandler(async (req, res, next) => {
         kode_shift,
         waktu_masuk: waktu_masuk,
         waktu_pulang: waktu_pulang,
-        latitude_masuk,
-        longitude_masuk,
-        ip_address,
-        latitude_pulang,
-        longitude_pulang,
         telat_masuk,
         telat_pulang,
+        latitude_masuk,
+        longitude_masuk,
+        latitude_pulang,
+        longitude_pulang,
         foto_masuk: foto_masuk,
         status_hadir: status_hadir || "1",
       },
@@ -156,50 +111,61 @@ const createAbsensi = asyncHandler(async (req, res, next) => {
 // @desc Update a absensi
 // @route POST /api/absensi/:id
 // @acces private
-const updateAbsensi = async (req, res) => {
-  const { id } = req.params;
-  const {
-    latitude_masuk,
-    longitude_masuk,
-    ip_address,
-    latitude_keluar,
-    longitude_keluar,
-    telat_masuk,
-    telat_keluar,
-    status_hadir,
-  } = req.body;
-
-  console.log(req);
-  // Cek apakah ada id yang terdaftar atau tidak
-  const existingAbsensi = await prisma.absensi.findUnique({
-    where: {
-      id_absensi: id,
-    },
-  });
-  if (!existingAbsensi) {
-    return res.status(404).json({ error: "Absensi tidak di temukan" });
-  }
-
-  // const foto_masuk = req.files[0].path;
-
-  const post = await prisma.absensi.update({
-    where: { id_absensi: id },
-    data: {
-      id_user,
+const updateAbsensi = asyncHandler(async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const {
+      kode_shift,
+      telat_masuk,
+      telat_pulang,
       latitude_masuk,
       longitude_masuk,
-      ip_address,
-      latitude_keluar,
-      longitude_keluar,
-      telat_masuk,
-      telat_keluar,
+      latitude_pulang,
+      longitude_pulang,
       status_hadir,
-    },
-    include: {
-      idUser: true,
-    },
-  });
-  res.json({ message: "succes Update absensi", post });
-};
+    } = req.body;
+
+    // console.log(req);
+    // Cek apakah ada id yang terdaftar atau tidak
+    const existingAbsensi = await prisma.absensi.findUnique({
+      where: {
+        id_absensi: parseInt(id),
+      },
+    });
+    if (!existingAbsensi) {
+      res.status(404);
+      throw new Error("Absensi tidak di temukan");
+    }
+
+    // Set waktu masuk dan waktu pulang berdasarkan kode_shift jika tersedia
+    let waktu_masuk;
+    let waktu_pulang;
+
+    if (kode_shift) {
+      const shiftData = getShiftTimes(kode_shift);
+      waktu_masuk = shiftData.waktu_masuk;
+      waktu_pulang = shiftData.waktu_pulang;
+    }
+
+    const post = await prisma.absensi.update({
+      where: { id_absensi: parseInt(id) },
+      data: {
+        kode_shift: kode_shift || existingAbsensi.kode_shift,
+        waktu_masuk: waktu_masuk || existingAbsensi.waktu_masuk,
+        waktu_pulang: waktu_pulang || existingAbsensi.waktu_pulang,
+        telat_masuk: telat_masuk || existingAbsensi.waktu_masuk,
+        telat_pulang: telat_pulang || existingAbsensi.telat_pulang,
+        latitude_masuk: latitude_masuk || existingAbsensi.latitude_masuk,
+        longitude_masuk: longitude_masuk || existingAbsensi.longitude_masuk,
+        latitude_pulang: latitude_pulang || existingAbsensi.latitude_pulang,
+        longitude_pulang: longitude_pulang || existingAbsensi.longitude_pulang,
+        status_hadir: status_hadir || existingAbsensi.status_hadir,
+      },
+    });
+    res.status(200).json({ message: "succes Update absensi", post });
+  } catch (error) {
+    next(error);
+  }
+});
 
 module.exports = { getAbsensi, createAbsensi, updateAbsensi };

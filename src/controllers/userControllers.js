@@ -31,25 +31,30 @@ const getUsers = async (req, res, next) => {
 // @desc Get user by id
 // @route GET /api/users/:id
 // @acces public
-const getUserById = async (req, res) => {
+const getUserById = asyncHandler(async (req, res, next) => {
   const { id } = req.params;
 
-  // Cek apakah ada id yang terdaftar atau tidak
-  const existingUser = await prisma.user.findUnique({
-    where: {
-      id_user: id,
-    },
-  });
-  if (!existingUser) {
-    return res.status(404).json({ error: "User tidak di temukan" });
+  try {
+    // Cek apakah ada id yang terdaftar atau tidak
+    const existingUser = await prisma.user.findUnique({
+      where: {
+        id_user: id,
+      },
+    });
+    if (!existingUser) {
+      res.status(404);
+      throw new Error("User tidak di temukan");
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id_user: id },
+    });
+
+    res.status(200).json(user);
+  } catch (error) {
+    next(error);
   }
-
-  const user = await prisma.user.findFirst({
-    where: { id_user: id },
-  });
-
-  res.status(200).json(user);
-};
+});
 
 // @desc Create a user
 // @route POST /api/users/create
@@ -317,7 +322,7 @@ const loginUser = asyncHandler(async (req, res, next) => {
           },
         },
         process.env.ACCES_TOKEN_SECRET,
-        { expiresIn: "15m" }
+        { expiresIn: "40m" }
       );
       res.status(200).json({ accessToken, id_user });
     } else if (!user) {

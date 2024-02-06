@@ -1,5 +1,4 @@
 const express = require("express");
-// const upload = require("../middleware/multerMiddleware");
 const {
   getUsers,
   getUserById,
@@ -8,14 +7,13 @@ const {
   deleteUser,
   loginUser,
 } = require("../controllers/userControllers");
-
 const validateToken = require("../middleware/validateTokenHandler");
 const storageMiddleware = require("../middleware/multerMiddleware");
 const router = express.Router();
-
 const dynamicPath = "uploads/foto/profile";
 const upload = storageMiddleware(dynamicPath);
 
+// Routes
 router.post("/login", loginUser);
 router.get("/", validateToken, getUsers);
 router.get("/:id", validateToken, getUserById);
