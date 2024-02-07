@@ -46,11 +46,7 @@ const getUserById = asyncHandler(async (req, res, next) => {
       throw new Error("User tidak di temukan");
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id_user: id },
-    });
-
-    res.status(200).json(user);
+    res.status(200).json(existingUser);
   } catch (error) {
     next(error);
   }
@@ -58,7 +54,7 @@ const getUserById = asyncHandler(async (req, res, next) => {
 
 // @desc Create a user
 // @route POST /api/users/create
-// @acces public
+// @acces private
 const createUser = asyncHandler(async (req, res, next) => {
   console.log(req.body);
   console.log(req.files);

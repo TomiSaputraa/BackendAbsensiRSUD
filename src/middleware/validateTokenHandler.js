@@ -14,11 +14,9 @@ const validateToken = asyncHandler(async (req, res, next) => {
       req.user = decoded.user;
       next();
     });
-
-    if (!token) {
-      res.status(401);
-      throw new Error("User tidak authorized atau token kosong");
-    }
+  } else if (!authHeader) {
+    res.status(401);
+    throw new Error("Tidak ada token yang tersedia");
   }
 });
 

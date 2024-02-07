@@ -16,6 +16,9 @@ app.use("/api/users", require("./src/routes/userRoutes"));
 app.use("/api/absensi", require("./src/routes/absensiRoutes"));
 app.use(errorHandler);
 
-app.listen(port, () => {
+app.listen(port, (error) => {
+  if (error) {
+    throw error;
+  }
   console.log(`Server berhasil berjalan di port : ${port}`);
 });

@@ -17,7 +17,7 @@ const upload = storageMiddleware(dynamicPath);
 router.post("/login", loginUser);
 router.get("/", validateToken, getUsers);
 router.get("/:id", validateToken, getUserById);
-router.post("/create", upload.any("foto_masuk"), createUser);
+router.post("/create", validateToken, upload.any("foto_masuk"), createUser);
 router.patch("/:id", validateToken, upload.any("foto_masuk"), updateUser);
 router.delete("/:id", validateToken, deleteUser);
 
