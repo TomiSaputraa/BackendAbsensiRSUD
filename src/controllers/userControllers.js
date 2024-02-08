@@ -5,7 +5,6 @@ const prisma = new PrismaClient();
 const jwt = require("jsonwebtoken");
 const validator = require("validator");
 const fs = require("fs");
-const { log } = require("console");
 require("dotenv").config();
 
 // @desc Get all users
@@ -234,7 +233,7 @@ const updateUser = asyncHandler(async (req, res, next) => {
     res.status(200).json({ message: "Succes update data user", result });
   } catch (err) {
     // Jika ada error maka gagal upload foto ke folder uploads
-    if (foto_profil && foto_profil !== existingUser.foto_profil) {
+    if (foto_profil && foto_profil) {
       fs.unlinkSync(foto_profil);
     }
     next(err);
