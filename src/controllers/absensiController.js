@@ -56,8 +56,8 @@ const createAbsensi = asyncHandler(async (req, res, next) => {
   // console.log(req.user.id_user);
   console.log(req.user);
 
+  let foto_masuk;
   try {
-    let foto_masuk;
     const {
       kode_shift,
       latitude_masuk,

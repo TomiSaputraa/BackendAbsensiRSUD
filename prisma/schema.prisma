@@ -84,19 +84,19 @@ enum KodeShift {
 model Izin {
   id_izin              Int        @id @unique @default(autoincrement()) @db.Int()
   id_user              String     @db.VarChar(7)
-  tanggal_mulai_izin   DateTime   @db.Date
-  tanggal_selesai_izin DateTime   @db.Date
-  tanggal_input_izin   DateTime   @db.DateTime()
+  tanggal_mulai_izin   DateTime   @db.DateTime()
+  tanggal_selesai_izin DateTime   @db.DateTime()
+  tanggal_input_izin   DateTime?  @default(now()) @db.DateTime()
   alasan_izin          String     @db.VarChar(255)
   total_hari_izin      Int        @db.Int()
-  status_izin          StatusIzin @default(PENDING)
+  status_izin          StatusIzin @default(Pending)
   user                 User       @relation(fields: [id_user], references: [id_user])
 }
 
 enum StatusIzin {
-  PENDING
-  DITERIMA
-  DITOLAK
+  Pending
+  Diterima
+  Ditolak
 }
 
 model Cuti {

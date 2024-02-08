@@ -2,6 +2,7 @@ const express = require("express");
 const errorHandler = require("./src/middleware/errorHandler");
 const helmet = require("helmet");
 const rateLimiter = require("express-rate-limit");
+
 const app = express();
 require("dotenv").config();
 const port = process.env.PORT || 3001;
@@ -22,6 +23,7 @@ app.use("/uploads", express.static("uploads"));
 // middleware routes
 app.use("/api/users", require("./src/routes/userRoutes"));
 app.use("/api/absensi", require("./src/routes/absensiRoutes"));
+app.use("/api/izin", require("./src/routes/izinRoutes"));
 app.use(errorHandler);
 
 app.listen(port, (error) => {
