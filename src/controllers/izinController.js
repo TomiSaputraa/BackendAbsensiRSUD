@@ -6,20 +6,17 @@ const createIzin = asyncHandler(async (req, res, next) => {
   console.log(req.user);
   console.log(req.body);
   try {
-    const {
-      tanggal_mulai_izin,
-      tanggal_selesai_izin,
-      alasan_izin,
-      total_hari_izin,
-    } = req.body;
+    // const {
+    //   tanggal_mulai_izin,
+    //   tanggal_selesai_izin,
+    //   alasan_izin,
+    //   total_hari_izin,
+    // } = req.body;
 
     const result = await prisma.izin.create({
       data: {
         id_user: req.user.id_user,
-        tanggal_mulai_izin,
-        tanggal_selesai_izin,
-        alasan_izin,
-        total_hari_izin,
+        ...req.body,
       },
     });
     if (result) {

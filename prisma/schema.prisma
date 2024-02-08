@@ -53,7 +53,7 @@ model Absensi {
   id_absensi       Int       @id @unique @default(autoincrement())
   id_user          String    @db.VarChar(7)
   idUser           User      @relation(fields: [id_user], references: [id_user])
-  kode_shift       KodeShift
+  kode_shift       KodeShift @default(L)
   tanggal_absensi  DateTime  @default(now()) @db.DateTime()
   waktu_masuk      String?   @db.VarChar(10)
   waktu_pulang     String?   @db.VarChar(10)
