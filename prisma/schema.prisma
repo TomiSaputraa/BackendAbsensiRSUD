@@ -51,7 +51,7 @@ enum JenisKelamin {
 model Absensi {
   id_absensi       Int       @id @unique @default(autoincrement())
   id_user          String    @db.VarChar(7)
-  idUser           User      @relation(fields: [id_user], references: [id_user], onDelete: NoAction)
+  idUser           User?     @relation(fields: [id_user], references: [id_user], onDelete: Cascade, onUpdate: Cascade)
   kode_shift       KodeShift @default(L)
   tanggal_absensi  DateTime  @default(now()) @db.DateTime()
   waktu_masuk      String?   @db.VarChar(10)
@@ -89,7 +89,7 @@ model Izin {
   alasan_izin          String          @db.VarChar(255)
   total_hari_izin      Int             @db.Int()
   status_izin          ApprovalStatus? @default(Pending)
-  user                 User            @relation(fields: [id_user], references: [id_user], onDelete: NoAction)
+  user                 User?           @relation(fields: [id_user], references: [id_user], onDelete: Cascade, onUpdate: Cascade)
 }
 
 model Cuti {
@@ -101,7 +101,7 @@ model Cuti {
   alasan_cuti          String          @db.VarChar(255)
   total_hari_cuti      Int             @db.Int
   status_cuti          ApprovalStatus? @default(Pending)
-  user                 User            @relation(fields: [id_user], references: [id_user], onDelete: NoAction)
+  user                 User?           @relation(fields: [id_user], references: [id_user], onDelete: Cascade, onUpdate: Cascade)
 }
 
 model Sakit {
@@ -114,7 +114,7 @@ model Sakit {
   bukti_foto            String          @db.VarChar(255)
   total_hari_sakit      Int             @db.Int
   status_sakit          ApprovalStatus? @default(Pending)
-  user                  User            @relation(fields: [id_user], references: [id_user], onDelete: NoAction)
+  user                  User?           @relation(fields: [id_user], references: [id_user], onDelete: Cascade, onUpdate: Cascade)
 }
 
 enum ApprovalStatus {
