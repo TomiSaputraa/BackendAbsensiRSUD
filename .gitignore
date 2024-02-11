@@ -7,3 +7,5 @@ uploads/*
 uploads/foto/absensi/*
 !uploads/foto/profile/.gitkeep
 uploads/foto/profile/*
+!uploads/foto/sakit/.gitkeep
+uploads/foto/sakit/*

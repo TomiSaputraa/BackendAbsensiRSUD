@@ -7,8 +7,10 @@ const {
   updateCuti,
 } = require("../controllers/cutiController");
 
+// Token validation
 router.use(validateToken);
 
+// Routes
 router.post("/create", createCuti);
 router.put("/:id", updateCuti);
 router.get("/", getCuti);

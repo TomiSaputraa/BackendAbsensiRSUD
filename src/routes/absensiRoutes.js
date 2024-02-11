@@ -5,17 +5,19 @@ const {
   updateAbsensi,
 } = require("../controllers/absensiController");
 const router = express.Router();
-
 const validateToken = require("../middleware/validateTokenHandler");
+
 // upload file
 const storageMiddleware = require("../middleware/multerMiddleware");
 
-// middleware untuk semua route Absensi
+// Token validation
 router.use(validateToken);
+
+// Upload file middleware
 const dynamicPath = "uploads/foto/absensi";
 const upload = storageMiddleware(dynamicPath);
 
-// All Role
+// Routes
 router.post("/create", upload.any("foto_masuk"), createAbsensi);
 router.put("/:id", upload.any("foto_masuk"), updateAbsensi);
 router.get("/", getAbsensi);

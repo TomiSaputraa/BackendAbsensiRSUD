@@ -24,7 +24,6 @@ model User {
   Izin            Izin[]
   Cuti            Cuti[]
   Sakit           Sakit[]
-  UbahJadwal      UbahJadwal[]
 }
 
 enum Jabatan {
@@ -82,74 +81,44 @@ enum KodeShift {
 }
 
 model Izin {
-  id_izin              Int        @id @unique @default(autoincrement()) @db.Int()
-  id_user              String     @db.VarChar(7)
-  tanggal_mulai_izin   DateTime   @db.DateTime()
-  tanggal_selesai_izin DateTime   @db.DateTime()
-  tanggal_input_izin   DateTime?  @default(now()) @db.DateTime()
-  alasan_izin          String     @db.VarChar(255)
-  total_hari_izin      Int        @db.Int()
-  status_izin          StatusIzin @default(Pending)
-  user                 User       @relation(fields: [id_user], references: [id_user], onDelete: NoAction)
-}
-
-enum StatusIzin {
-  Pending
-  Diterima
-  Ditolak
+  id_izin              Int             @id @unique @default(autoincrement()) @db.Int()
+  id_user              String          @db.VarChar(7)
+  tanggal_mulai_izin   DateTime        @db.DateTime()
+  tanggal_selesai_izin DateTime        @db.DateTime()
+  tanggal_input_izin   DateTime?       @default(now()) @db.DateTime()
+  alasan_izin          String          @db.VarChar(255)
+  total_hari_izin      Int             @db.Int()
+  status_izin          ApprovalStatus? @default(Pending)
+  user                 User            @relation(fields: [id_user], references: [id_user], onDelete: NoAction)
 }
 
 model Cuti {
-  id_cuti              Int         @id @unique @default(autoincrement()) @db.Int()
-  id_user              String      @db.VarChar(7)
-  tanggal_mulai_cuti   DateTime    @db.Date
-  tanggal_selesai_cuti DateTime    @db.Date
-  tanggal_input_cuti   DateTime?   @default(now()) @db.DateTime()
-  alasan_cuti          String      @db.VarChar(255)
-  total_hari_cuti      Int         @db.Int
-  status_cuti          StatusCuti? @default(Pending)
-  user                 User        @relation(fields: [id_user], references: [id_user], onDelete: NoAction)
-}
-
-enum StatusCuti {
-  Pending
-  Diterima
-  Ditolak
+  id_cuti              Int             @id @unique @default(autoincrement()) @db.Int()
+  id_user              String          @db.VarChar(7)
+  tanggal_mulai_cuti   DateTime        @db.Date
+  tanggal_selesai_cuti DateTime        @db.Date
+  tanggal_input_cuti   DateTime?       @default(now()) @db.DateTime()
+  alasan_cuti          String          @db.VarChar(255)
+  total_hari_cuti      Int             @db.Int
+  status_cuti          ApprovalStatus? @default(Pending)
+  user                 User            @relation(fields: [id_user], references: [id_user], onDelete: NoAction)
 }
 
 model Sakit {
-  id_sakit              Int         @id @unique @default(autoincrement()) @db.Int
-  id_user               String      @db.VarChar(7)
-  tanggal_mulai_sakit   DateTime    @db.Date
-  tanggal_selesai_sakit DateTime    @db.Date
-  tanggal_input_sakit   DateTime    @db.DateTime()
-  alasan_sakit          String      @db.VarChar(255)
-  bukti_foto            String      @db.VarChar(255)
-  total_hari_sakit      Int         @db.Int
-  status_sakit          StatusSakit @default(PENDING)
-  user                  User        @relation(fields: [id_user], references: [id_user], onDelete: NoAction)
+  id_sakit              Int             @id @unique @default(autoincrement()) @db.Int
+  id_user               String          @db.VarChar(7)
+  tanggal_mulai_sakit   DateTime        @db.Date
+  tanggal_selesai_sakit DateTime        @db.Date
+  tanggal_input_sakit   DateTime?       @default(now()) @db.DateTime()
+  alasan_sakit          String          @db.VarChar(255)
+  bukti_foto            String          @db.VarChar(255)
+  total_hari_sakit      Int             @db.Int
+  status_sakit          ApprovalStatus? @default(Pending)
+  user                  User            @relation(fields: [id_user], references: [id_user], onDelete: NoAction)
 }
 
-enum StatusSakit {
-  PENDING
-  DITERIMA
-  DITOLAK
-}
-
-model UbahJadwal {
-  id_jadwal                Int              @id @default(autoincrement())
-  id_user                  String           @db.VarChar(7)
-  tanggal_input_ubahJadwal DateTime         @db.DateTime()
-  jam_input_ubahJadwal     DateTime         @db.DateTime()
-  jam_ubahJadwal           DateTime         @db.DateTime()
-  tanggal_ubahJadwal       DateTime         @db.Date
-  alasan_ubahJadwal        String           @db.VarChar(255)
-  status_ubahJadwal        StatusUbahJadwal @default(PENDING)
-  user                     User             @relation(fields: [id_user], references: [id_user], onDelete: NoAction)
-}
-
-enum StatusUbahJadwal {
-  PENDING
-  DITERIMA
-  DITOLAK
+enum ApprovalStatus {
+  Pending
+  Diterima
+  Ditolak
 }

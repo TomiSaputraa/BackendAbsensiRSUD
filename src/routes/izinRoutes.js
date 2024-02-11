@@ -7,8 +7,10 @@ const {
 const router = express.Router();
 const validateToken = require("../middleware/validateTokenHandler");
 
+// Token validation
 router.use(validateToken);
 
+// Routes
 router.post("/create", createIzin);
 router.put("/:id", updateIzin);
 router.get("/", getIzin);
