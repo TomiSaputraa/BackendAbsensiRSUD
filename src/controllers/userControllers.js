@@ -259,7 +259,7 @@ const deleteUser = asyncHandler(async (req, res, next) => {
         throw new Error("User dengan id tersebut tidak ditemukan");
       }
       // Nonaktifkan foreign key
-      await prisma.$executeRaw`SET FOREIGN_KEY_CHECKS=0`;
+      // await prisma.$executeRaw`SET FOREIGN_KEY_CHECKS=0`;
 
       // Hapus user
       const deletedUser = await prisma.user.delete({
@@ -274,7 +274,7 @@ const deleteUser = asyncHandler(async (req, res, next) => {
         fs.unlinkSync(fileFoto);
 
         // Aktifkan kembali foreign key
-        await prisma.$executeRaw`SET FOREIGN_KEY_CHECKS=1`;
+        // await prisma.$executeRaw`SET FOREIGN_KEY_CHECKS=1`;
 
         res.status(200).json({
           message: `User dengan ID ${id} dan data terkait dihapus`,

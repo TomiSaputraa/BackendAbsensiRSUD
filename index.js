@@ -24,11 +24,8 @@ app.use("/uploads", express.static("uploads"));
 app.use("/api/users", require("./src/routes/userRoutes"));
 app.use("/api/absensi", require("./src/routes/absensiRoutes"));
 app.use("/api/izin", require("./src/routes/izinRoutes"));
+app.use("/api/cuti", require("./src/routes/cutiRoutes"));
+app.use("/api/sakit", require("./src/routes/sakitRoutes"));
 app.use(errorHandler);
 
-app.listen(port, (error) => {
-  if (error) {
-    throw new Error(error);
-  }
-  console.log(`Server berhasil berjalan di port : ${port}`);
-});
+app.listen(port, console.log(`Server berhasil berjalan di port : ${port}`));

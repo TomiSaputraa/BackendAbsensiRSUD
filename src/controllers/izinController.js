@@ -50,7 +50,7 @@ const updateIzin = asyncHandler(async (req, res, next) => {
       throw new Error("Izin tidak ditemukan");
     }
 
-    const post = await prisma.izin.update({
+    const put = await prisma.izin.update({
       where: { id_izin: parseInt(id) },
       data: {
         tanggal_mulai_izin:
@@ -61,7 +61,7 @@ const updateIzin = asyncHandler(async (req, res, next) => {
         total_hari_izin: total_hari_izin,
       },
     });
-    res.status(200).json({ message: "succes update izin", post });
+    res.status(200).json({ message: "succes update izin", put });
   } catch (error) {
     next(error);
   }
