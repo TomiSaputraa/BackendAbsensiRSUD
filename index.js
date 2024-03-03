@@ -8,8 +8,8 @@ require("dotenv").config();
 const port = process.env.PORT || 3001;
 
 const limiter = rateLimiter({
-  windowMs: 15 * 60 * 1000, // 15 menit
-  max: 100, // maksimal 100 permintaan dalam 15 menit
+  windowMs: 15 * 60 * 1000, // Reset dalam 15 menit
+  max: 1000, // maksimal 1000 permintaan dalam 15 menit
 });
 
 // middleware
