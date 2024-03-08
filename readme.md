@@ -1,5 +1,13 @@
 # Setup
 
+# setup prisma connecting to database
+
+```bash
+npx prisma migrate dev
+```
+
+# setup backend
+
 ```bash
 npm init -y
 ```

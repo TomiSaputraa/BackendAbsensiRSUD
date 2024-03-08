@@ -3,6 +3,7 @@ const {
   getAbsensi,
   createAbsensi,
   updateAbsensi,
+  checkAbsensiToday,
 } = require("../controllers/absensiController");
 const router = express.Router();
 const validateToken = require("../middleware/validateTokenHandler");
@@ -21,5 +22,6 @@ const upload = storageMiddleware(dynamicPath);
 router.post("/create", upload.any("foto_masuk"), createAbsensi);
 router.put("/:id", upload.any("foto_masuk"), updateAbsensi);
 router.get("/", getAbsensi);
+router.get("/checkAbsesiToday", checkAbsensiToday);
 
 module.exports = router;

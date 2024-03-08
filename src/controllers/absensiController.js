@@ -168,4 +168,36 @@ const updateAbsensi = asyncHandler(async (req, res, next) => {
   }
 });
 
-module.exports = { getAbsensi, createAbsensi, updateAbsensi };
+// @desc Check absensi created today
+// @route GET /api/absensi/checkAbsesiToday
+// @acces private
+const checkAbsensiToday = asyncHandler(async (req, res, next) => {
+  try {
+    const absensi = await prisma.user.findUnique({
+      where: { id_user: req.user.id_user },
+      select: {
+        Absensi: {
+          orderBy: { id_absensi: "desc" }, // urut dari terakhir
+          take: 1, // hanya ambil satu data absensi
+        },
+      },
+    });
+
+    if (!absensi) {
+      res.status(404);
+      throw new Error("Absensi user tidak di temukan");
+    }
+
+    const singleAbsensi = absensi.Absensi[0];
+    res.status(200).json(singleAbsensi);
+  } catch (error) {
+    next(error);
+  }
+});
+
+module.exports = {
+  getAbsensi,
+  createAbsensi,
+  updateAbsensi,
+  checkAbsensiToday,
+};

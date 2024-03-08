@@ -83,8 +83,8 @@ enum KodeShift {
 model Izin {
   id_izin              Int             @id @unique @default(autoincrement()) @db.Int()
   id_user              String          @db.VarChar(7)
-  tanggal_mulai_izin   DateTime        @db.DateTime()
-  tanggal_selesai_izin DateTime        @db.DateTime()
+  tanggal_mulai_izin   String          @db.VarChar(20)
+  tanggal_selesai_izin String          @db.VarChar(20)
   tanggal_input_izin   DateTime?       @default(now()) @db.DateTime()
   alasan_izin          String          @db.VarChar(255)
   total_hari_izin      Int             @db.Int()
@@ -95,8 +95,8 @@ model Izin {
 model Cuti {
   id_cuti              Int             @id @unique @default(autoincrement()) @db.Int()
   id_user              String          @db.VarChar(7)
-  tanggal_mulai_cuti   DateTime        @db.Date
-  tanggal_selesai_cuti DateTime        @db.Date
+  tanggal_mulai_cuti   String          @db.VarChar(20)
+  tanggal_selesai_cuti String          @db.VarChar(20)
   tanggal_input_cuti   DateTime?       @default(now()) @db.DateTime()
   alasan_cuti          String          @db.VarChar(255)
   total_hari_cuti      Int             @db.Int
@@ -107,8 +107,8 @@ model Cuti {
 model Sakit {
   id_sakit              Int             @id @unique @default(autoincrement()) @db.Int
   id_user               String          @db.VarChar(7)
-  tanggal_mulai_sakit   DateTime        @db.Date
-  tanggal_selesai_sakit DateTime        @db.Date
+  tanggal_mulai_sakit   String          @db.VarChar(20)
+  tanggal_selesai_sakit String          @db.VarChar(20)
   tanggal_input_sakit   DateTime?       @default(now()) @db.DateTime()
   alasan_sakit          String          @db.VarChar(255)
   bukti_foto            String          @db.VarChar(255)
