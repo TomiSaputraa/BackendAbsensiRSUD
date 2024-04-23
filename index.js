@@ -26,6 +26,7 @@ app.use("/api/absensi", require("./src/routes/absensiRoutes"));
 app.use("/api/izin", require("./src/routes/izinRoutes"));
 app.use("/api/cuti", require("./src/routes/cutiRoutes"));
 app.use("/api/sakit", require("./src/routes/sakitRoutes"));
+app.use("/api/admin", require("./src/routes/adminRoutes"));
 app.use(errorHandler);
 
 app.listen(port, console.log(`Server berhasil berjalan di port : ${port}`));

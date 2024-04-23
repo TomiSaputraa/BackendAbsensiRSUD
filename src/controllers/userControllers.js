@@ -332,6 +332,40 @@ const loginUser = asyncHandler(async (req, res, next) => {
   }
 });
 
+const getAllAbsensiById = asyncHandler(async (req, res, next) => {
+  console.log(req);
+  try {
+    const existingAbsensi = await prisma.user.findUnique({
+      where: {
+        id_user: req.user.id_user,
+      },
+      include: {
+        Absensi: true,
+        Cuti: true,
+        Izin: true,
+        Sakit: true,
+      },
+    });
+
+    if (!existingAbsensi) {
+      res.status(404);
+      throw new Error("Tidak ada data absensi yang ditemukan");
+    }
+
+    // Menggabungkan semua data absensi, cuti, sakit, dan izin ke dalam satu array
+    // const allData = [].concat(
+    //   existingAbsensi.Absensi,
+    //   existingAbsensi.Cuti,
+    //   existingAbsensi.Izin,
+    //   existingAbsensi.Sakit
+    // );
+
+    res.status(200).json(existingAbsensi);
+  } catch (error) {
+    next(error);
+  }
+});
+
 module.exports = {
   getUsers,
   getUserById,
@@ -339,4 +373,5 @@ module.exports = {
   updateUser,
   deleteUser,
   loginUser,
+  getAllAbsensiById,
 };
